@@ -21,9 +21,13 @@ Directory Structure
 The repository is structured as follows:
 
 app.py: Main Flask application file containing routes and logic.
+
 templates/: Directory containing HTML templates for different pages.
+
 static/: Directory for static assets like CSS stylesheets, images, and client-side JavaScript files.
+
 static/css/: CSS files for styling.
+
 static/img/: Image files used in the application.
 
 Running the Application
