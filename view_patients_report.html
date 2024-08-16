@@ -1,19 +1,22 @@
-{% extends "base.html" %}
-
-{% block title %}Patients{% endblock %}
-
-{% block content %}
-        <!-- Main Content -->
-                        <h1>View Patient Data</h1>
-                        <form action="{{ url_for('view_patients_report') }}" method="POST">
-                            <div class="form-group">
-                                <label for="patientId">Patient ID</label>
-                                <input type="text" class="form-control" id="patientId" name="patientId" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">View Patient Data</button>
-                        </form>
-            <div class="d-flex justify-content-between">
-                {% include 'back_button.html' %}
-                {% include 'logout_button.html' %}
-            </div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Reports</title>
+</head>
+<body>
+    <h1>Reports for Patient {{ patient.name }}</h1>
+    <a href="{{ url_for('add_patient_report', patient_id=patient.id) }}">Add New Report</a>
+    <ul>
+        {% for report in reports %}
+        <li>
+            <strong>Date:</strong> {{ report.date }}<br>
+            <strong>Drug:</strong> {{ report.drug }}<br>
+            <strong>Referral:</strong> {{ report.referral }}<br>
+            <strong>Dosage:</strong> {{ report.dosage }}<br>
+            <strong>Doctor Review:</strong> {{ report.doctor_review }}<br>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

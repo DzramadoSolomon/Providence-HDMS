@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Write Dosage{% endblock %}
+
+{% block content %}
+<h1>Write Dosage</h1>
+
+{% if patient_reports is not none %}
+    <form method="post">
+        <input type="hidden" name="patient_id" value="{{ request.args.get('patient_id') }}">  <!-- Hidden field for patient_id -->
+        <div class="form-group">
+            <label for="report_id">Select Report:</label>
+            <select class="form-control" id="report_id" name="report_id" required>
+                {% for report in patient_reports %}
+                    <option value="{{ report.id }}">Report ID: {{ report.id }} | Date: {{ report.date }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="dosage">Dosage:</label>
+            <input type="text" class="form-control" id="dosage" name="dosage" required>
+        </div>
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <input type="text" class="form-control" id="price" name="price" required>
+        </div>
+        <div class="form-group">
+            <label for="availability">Availability:</label>
+            <select class="form-control" id="availability" name="availability" required>
+                <option value="true">Available</option>
+                <option value="false">Not Available</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Dosage</button>
+    </form>
+{% else %}
+    <form method="get">
+        <div class="form-group">
+            <label for="patient_id">Enter Patient ID:</label>
+            <input type="text" class="form-control" id="patient_id" name="patient_id" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Search Reports</button>
+    </form>
+{% endif %}
+<div class="d-flex justify-content-between">
+    {% include 'back_button.html' %}
+    {% include 'logout_button.html' %}
+</div>
+{% endblock %}

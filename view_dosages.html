@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}View Dosages{% endblock %}
+{% block content %}
+<h2>View Dosages</h2>
+<form method="post">
+    <div class="form-group">
+        <label for="patient_id">Patient ID:</label>
+        <input type="text" class="form-control" id="patient_id" name="patient_id" required>
+    </div>
+    <button type="submit" class="btn btn-primary">View Dosages</button>
+</form>
+
+{% if dosages %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Report ID</th>
+                <th>Dosage</th>
+                <th>Price</th>
+                <th>Availability</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dosage in dosages %}
+                <tr>
+                    <td>{{ dosage.report_id }}</td>
+                    <td>{{ dosage.dosage }}</td>
+                    <td>{{ dosage.price }}</td>
+                    <td>{{ dosage.availability }}</td>
+                    <td>
+                        <a href="{{ url_for('update_dosage', id=dosage.id) }}" class="btn btn-warning btn-sm">Update</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+<div class="d-flex justify-content-between">
+    {% include 'back_button.html' %}
+    {% include 'logout_button.html' %}
+</div>
+{% endblock %}

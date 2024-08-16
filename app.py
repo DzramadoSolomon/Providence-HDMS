@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for,  session, flash
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for session management
@@ -56,22 +56,22 @@ class PatientReport(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False)
-    report = db.Column(db.Text, nullable=True)
-    drugs = db.Column(db.Text, nullable=True)
-    referrals = db.Column(db.Text, nullable=True)
-    patient = db.relationship('Patient', backref=db.backref('reports', lazy=True))
-    doctor = db.relationship('Doctor', backref=db.backref('reports', lazy=True))
-
+    date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    drug = db.Column(db.String(100), nullable=False)
+    referral = db.Column(db.String(100), nullable=False)
+    doctor_review = db.Column(db.Text, nullable=False)
+    patient = db.relationship('Patient', backref=db.backref('patient_reports', lazy=True))
+    
+from datetime import datetime
 
 class Dosage(db.Model):
     __tablename__ = 'dosages'
     id = db.Column(db.Integer, primary_key=True)
-    patient_report_id = db.Column(db.Integer, db.ForeignKey('patient_reports.id'), nullable=False)
-    dosage = db.Column(db.String(200), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    availability = db.Column(db.Boolean, nullable=False, default=True)
-    patient_report = db.relationship('PatientReport', backref=db.backref('dosage', uselist=False))
-
+    patient_id = db.Column(db.Integer, nullable=False)
+    report_id = db.Column(db.Integer, nullable=False)
+    dosage = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    availability = db.Column(db.Boolean, default=True)
 
 
 with app.app_context():
@@ -295,6 +295,50 @@ def assigned_patients():
     patients = Patient.query.filter_by(doctor_id=doctor_id).all()
     return render_template('assigned_patients.html', patients=patients)
 
+@app.route('/add_report', methods=['GET', 'POST'])
+def add_report():
+    if 'doctor_id' not in session:
+        flash('Please log in to access this page.', 'danger')
+        return redirect(url_for('doctor_login'))
+
+    if request.method == 'POST':
+        patient_id = request.form.get('patient_id')
+        doctor_id = session['doctor_id']
+        date = request.form.get('date')
+        drug = request.form.get('drug')
+        referral = request.form.get('referral')
+        doctor_review = request.form.get('doctor_review')
+
+        # Validate inputs and save the report
+        patient = Patient.query.get(patient_id)
+        if patient_id and (patient.doctor_id is None or patient.doctor_id == int(doctor_id)):
+            report = PatientReport(
+                patient_id=patient_id,
+                date=date,
+                drug=drug,
+                referral=referral,
+                doctor_review=doctor_review
+            )
+            db.session.add(report)
+            db.session.commit()
+            flash('Report added successfully!', 'success')
+            #return redirect(url_for('view_reports', patient_id=patient_id))
+        else:
+            flash('Please fill out all fields.', 'danger')
+    
+    return render_template('add_report.html')
+
+@app.route('/view_reports', methods=['GET'])
+def view_reports():
+    patient_id = request.args.get('patient_id')
+    if patient_id:
+        reports = PatientReport.query.filter_by(patient_id=patient_id).all()
+    else:
+        reports = []
+
+    return render_template('view_reports.html', reports=reports)
+
+
 @app.route('/write_doctor_review', methods=['GET', 'POST'])
 def write_doctor_review():
     if 'doctor_id' not in session:
@@ -433,35 +477,30 @@ def pharmacist_dashboard():
         return redirect(url_for('pharmacist_login'))
     return render_template('pharmacist_dashboard.html')
 
-@app.route('/pharmacist_view_all_reports')
-def pharmacist_view_all_reports():
-    if 'pharmacist_id' not in session:
-        flash('Please log in to access this page.', 'danger')
-        return redirect(url_for('pharmacist_login'))
-
-    patient_reports = PatientReport.query.all()
-    return render_template('pharmacist_view_all_reports.html', patient_reports=patient_reports)
-
-    
-    # Render template with form to input patient ID
-    return render_template('pharmacist_view_patient_form.html')
-
 @app.route('/pharmacist_view_report', methods=['GET', 'POST'])
 def pharmacist_view_report():
     if 'pharmacist_id' not in session:
         flash('Please log in to access this page.', 'danger')
         return redirect(url_for('pharmacist_login'))
 
+    reports = None
     if request.method == 'POST':
         patient_id = request.form.get('patient_id')
-        patient_report = PatientReport.query.filter_by(patient_id=patient_id).first()
+        reports = PatientReport.query.filter_by(patient_id=patient_id).all()
+        if not reports:
+            flash('No reports found for this patient ID.', 'danger')
+            return redirect(url_for('pharmacist_view_report'))
 
-        if patient_report:
-            return render_template('pharmacist_view_report.html', patient_report=patient_report)
-        else:
-            flash('No report found for the given patient ID.', 'danger')
+    return render_template('pharmacist_view_report.html', reports=reports)
 
-    return render_template('pharmacist_view_report_form.html')
+
+@app.route('/pharmacist_view_all_reports')
+def pharmacist_view_all_reports():
+    if 'pharmacist_id' not in session:
+        flash('Please log in to access this page.', 'danger')
+        return redirect(url_for('pharmacist_login'))
+    reports = PatientReport.query.all()
+    return render_template('pharmacist_view_all_reports.html', reports=reports)
 
 @app.route('/pharmacist_write_dosage', methods=['GET', 'POST'])
 def pharmacist_write_dosage():
@@ -470,67 +509,57 @@ def pharmacist_write_dosage():
         return redirect(url_for('pharmacist_login'))
 
     if request.method == 'POST':
-        patient_id = request.form.get('patient_id')
+        # If the form to add a dosage is submitted
+        patient_id = request.form.get('patient_id')  # Retrieve patient_id from the form
+        report_id = request.form.get('report_id')
         dosage = request.form.get('dosage')
         price = request.form.get('price')
-        availability = request.form.get('availability') == 'True'
+        availability = request.form.get('availability') == 'on'
 
-        patient_report = PatientReport.query.filter_by(patient_id=patient_id).first()
-        if patient_report:
-            new_dosage = Dosage(
-                patient_report_id=patient_report.id,
-                dosage=dosage,
-                price=price,
-                availability=availability
-            )
-            db.session.add(new_dosage)
-            db.session.commit()
-            flash('Dosage and price added successfully.', 'success')
-            return render_template('pharmacist_view_report.html', patient_report=patient_report)
-        else:
-            flash('No report found for the given patient ID.', 'danger')
+        # Create and save new dosage with patient_id
+        new_dosage = Dosage(patient_id=patient_id, report_id=report_id, dosage=dosage, price=price, availability=availability)
+        db.session.add(new_dosage)
+        db.session.commit()
 
-    return render_template('pharmacist_write_dosage_form.html')
+        flash('Dosage added successfully', 'success')
+        return redirect(url_for('pharmacist_dashboard'))
+
+    patient_reports = None
+    if 'patient_id' in request.args:
+        patient_id = request.args.get('patient_id')
+        patient_reports = PatientReport.query.filter_by(patient_id=patient_id).all()
+
+        if not patient_reports:
+            flash('No reports found for this patient ID.', 'danger')
+            return redirect(url_for('pharmacist_write_dosage'))
+
+    return render_template('write_dosage.html', patient_reports=patient_reports)
+
+
 
 @app.route('/pharmacist_view_dosage', methods=['GET', 'POST'])
 def pharmacist_view_dosage():
-    if 'pharmacist_id' not in session:
-        flash('Please log in to access this page.', 'danger')
-        return redirect(url_for('pharmacist_login'))
+    if request.method == 'POST':
+        patient_id = request.form['patient_id']
+        dosages = Dosage.query.filter_by(patient_id=patient_id).all()
+        return render_template('view_dosages.html', dosages=dosages)
+
+    return render_template('view_dosages.html', dosages=None)
+
+@app.route('/update_dosage/<int:id>', methods=['GET', 'POST'])
+def update_dosage(id):
+    dosage = Dosage.query.get_or_404(id)
 
     if request.method == 'POST':
-        patient_report_id = request.form.get('patient_report_id')
-        dosage = Dosage.query.filter_by(patient_report_id=patient_report_id).first()
-        
-        if dosage:
-            return render_template('pharmacist_view_dosage.html', dosage=dosage)
-        else:
-            flash('No dosage information found for the given patient report ID.', 'danger')
+        dosage.dosage = request.form['dosage']
+        dosage.price = request.form['price']
+        dosage.availability = request.form.get('availability') == 'on'
 
-    return render_template('pharmacist_view_dosage_form.html')
+        db.session.commit()
+        flash('Dosage updated successfully', 'success')
+        return redirect(url_for('pharmacist_view_dosage'))
 
-@app.route('/pharmacist_update_dosage', methods=['GET', 'POST'])
-def pharmacist_update_dosage():
-    if 'pharmacist_id' not in session:
-        flash('Please log in to access this page.', 'danger')
-        return redirect(url_for('pharmacist_login'))
-
-    if request.method == 'POST':
-        patient_report_id = request.form.get('patient_report_id')
-        dosage = Dosage.query.filter_by(patient_report_id=patient_report_id).first()
-        
-        if dosage:
-            if 'update_dosage' in request.form:
-                dosage.dosage = request.form.get('dosage')
-                dosage.price = request.form.get('price')
-                dosage.availability = request.form.get('availability') == 'True'
-                db.session.commit()
-                flash('Dosage information updated successfully.', 'success')
-            return render_template('pharmacist_update_dosage.html', dosage=dosage)
-        else:
-            flash('No dosage information found for the given patient report ID.', 'danger')
-
-    return render_template('pharmacist_update_dosage_form.html')
+    return render_template('update_dosage.html', dosage=dosage)
 
 
 

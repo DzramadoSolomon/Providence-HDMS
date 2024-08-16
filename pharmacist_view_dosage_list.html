@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}View Dosages{% endblock %}
+
+{% block content %}
+<h1>Dosages for Patient {{ patient_id }}</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Report ID</th>
+            <th>Dosage</th>
+            <th>Price</th>
+            <th>Availability</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dosage in dosages %}
+        <tr>
+            <td>{{ dosage.patient_report_id }}</td>
+            <td>{{ dosage.dosage }}</td>
+            <td>{{ dosage.price }}</td>
+            <td>{{ dosage.availability }}</td>
+            <td>{{ dosage.date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

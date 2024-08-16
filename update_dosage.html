@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Update Dosage{% endblock %}
+{% block content %}
+<h2>Update Dosage</h2>
+<form method="post">
+    <div class="form-group">
+        <label for="dosage">Dosage:</label>
+        <input type="text" class="form-control" id="dosage" name="dosage" value="{{ dosage.dosage }}" required>
+    </div>
+    <div class="form-group">
+        <label for="price">Price:</label>
+        <input type="number" class="form-control" id="price" name="price" step="0.01" value="{{ dosage.price }}" required>
+    </div>
+    <div class="form-group">
+        <label for="availability">Availability:</label>
+        <input type="checkbox" id="availability" name="availability" {% if dosage.availability %}checked{% endif %}>
+    </div>
+    <button type="submit" class="btn btn-success">Update Dosage</button>
+</form>
+{% endblock %}

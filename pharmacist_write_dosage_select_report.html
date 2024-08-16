@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Write Dosage{% endblock %}
+
+{% block content %}
+<h1>Write Dosage for Patient {{ patient_id }}</h1>
+<form method="post">
+    <input type="hidden" name="patient_id" value="{{ patient_id }}">
+    <div class="form-group">
+        <label for="report_id">Select Report:</label>
+        <select class="form-control" id="report_id" name="report_id" required>
+            {% for report in patient_reports %}
+                <option value="{{ report.id }}">Report {{ report.id }} - {{ report.date }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="dosage">Dosage:</label>
+        <input type="text" class="form-control" id="dosage" name="dosage" required>
+    </div>
+    <div class="form-group">
+        <label for="price">Price:</label>
+        <input type="text" class="form-control" id="price" name="price" required>
+    </div>
+    <div class="form-group">
+        <label for="availability">Availability:</label>
+        <select class="form-control" id="availability" name="availability" required>
+            <option value="true">Available</option>
+            <option value="false">Not Available</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="date">Date:</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Dosage</button>
+</form>
+{% endblock %}

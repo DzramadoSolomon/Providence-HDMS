@@ -1,16 +1,40 @@
 {% extends "base.html" %}
 
-{% block title %}Patient Report{% endblock %}
+{% block title %}View Patient Report{% endblock %}
 
 {% block content %}
     <h1>Patient Report</h1>
-    <ul>
-        <li><strong>Patient ID:</strong> {{ patient_report.patient_id }}</li>
-        <li><strong>Doctor ID:</strong> {{ patient_report.doctor_id }}</li>
-        <li><strong>Report:</strong> {{ patient_report.report }}</li>
-        <li><strong>Drugs:</strong> {{ patient_report.drugs }}</li>
-        <li><strong>Referrals:</strong> {{ patient_report.referrals }}</li>
-    </ul>
+    {% if reports %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Patient ID</th>
+                <th>Date</th>
+                <th>Drug</th>
+                <th>Doctor Review</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.patient_id }}</td>
+                <td>{{ report.date }}</td>
+                <td>{{ report.drug }}</td>
+                <td>{{ report.doctor_review }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No reports found.</p>
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <label for="patient_id">Patient ID:</label>
+            <input type="text" class="form-control" id="patient_id" name="patient_id" required>
+        </div>
+        <button type="submit" class="btn btn-primary">View Reports</button>
+    </form>
     <div class="d-flex justify-content-between">
         {% include 'back_button.html' %}
         {% include 'logout_button.html' %}

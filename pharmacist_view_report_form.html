@@ -1,18 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}View Patient Report{% endblock %}
+{% block title %}View Dosage{% endblock %}
 
 {% block content %}
-    <h1>View Patient Report</h1>
-    <form method="POST" action="{{ url_for('pharmacist_view_report') }}">
-        <div class="form-group">
-            <label for="patient_id">Patient ID:</label>
-            <input type="text" name="patient_id" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">View Report</button>
-    </form>
-    <div class="d-flex justify-content-between">
-        {% include 'back_button.html' %}
-        {% include 'logout_button.html' %}
+<h1>View Dosage</h1>
+<form method="post">
+    <div class="form-group">
+        <label for="patient_id">Patient ID:</label>
+        <input type="text" class="form-control" id="patient_id" name="patient_id" required>
     </div>
+    <button type="submit" class="btn btn-primary">View Dosages</button>
+</form>
 {% endblock %}

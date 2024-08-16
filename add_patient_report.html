@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Patient Report</title>
+</head>
+<body>
+    <h1>Add Patient Report for Patient {{ patient_id }}</h1>
+    <form method="POST">
+        <label for="drug">Drug:</label>
+        <input type="text" id="drug" name="drug" required><br>
+
+        <label for="referral">Referral:</label>
+        <input type="text" id="referral" name="referral" required><br>
+
+        <label for="dosage">Dosage:</label>
+        <input type="text" id="dosage" name="dosage" required><br>
+
+        <label for="doctor_review">Doctor Review:</label>
+        <textarea id="doctor_review" name="doctor_review" required></textarea><br>
+
+        <button type="submit">Add Report</button>
+    </form>
+</body>
+</html>

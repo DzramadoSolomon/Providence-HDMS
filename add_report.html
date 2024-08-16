@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Report{% endblock %}
+
+{% block content %}
+    <h1 style="text-align: center;">Add New Report</h1>
+    <form method="post">
+        <div class="form-group">
+            <label for="patient_id">Patient ID</label>
+            <input type="text" class="form-control" id="patient_id" name="patient_id" required>
+        </div>
+        <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+        <div class="form-group">
+            <label for="drug">Drug</label>
+            <input type="text" class="form-control" id="drug" name="drug" required>
+        </div>
+        <div class="form-group">
+            <label for="referral">Referral</label>
+            <input type="text" class="form-control" id="referral" name="referral" required>
+        </div>
+        <div class="form-group">
+            <label for="doctor_review">Doctor Review</label>
+            <textarea class="form-control" id="doctor_review" name="doctor_review" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <div class="d-flex justify-content-between">
+        {% include 'back_button.html' %}
+        {% include 'logout_button.html' %}
+    </div>
+{% endblock %}

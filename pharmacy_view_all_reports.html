@@ -7,25 +7,27 @@
     <table class="table">
         <thead>
             <tr>
+                <th>Report ID</th>
                 <th>Patient ID</th>
+                <th>Doctor ID</th>
                 <th>Date</th>
                 <th>Drug</th>
+                <th>Referral</th>
                 <th>Doctor Review</th>
             </tr>
         </thead>
         <tbody>
             {% for report in reports %}
             <tr>
+                <td>{{ report.id }}</td>
                 <td>{{ report.patient_id }}</td>
+                <td>{{ report.doctor_id }}</td>
                 <td>{{ report.date }}</td>
                 <td>{{ report.drug }}</td>
+                <td>{{ report.referral }}</td>
                 <td>{{ report.doctor_review }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <div class="d-flex justify-content-between">
-        {% include 'back_button.html' %}
-        {% include 'logout_button.html' %}
-    </div>
 {% endblock %}

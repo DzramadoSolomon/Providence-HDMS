@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}View Dosage{% endblock %}
+{% block title %}Write Dosage{% endblock %}
 
 {% block content %}
-<h1>View Dosage</h1>
+<h1>Write Dosage</h1>
 <form method="post">
     <div class="form-group">
         <label for="patient_id">Patient ID:</label>
         <input type="text" class="form-control" id="patient_id" name="patient_id" required>
     </div>
-    <button type="submit" class="btn btn-primary">View Dosages</button>
+    <button type="submit" class="btn btn-primary">Select Patient</button>
 </form>
 {% endblock %}
